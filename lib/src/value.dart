@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:get/state_manager.dart';
+import 'package:getxtra/get.dart' show Value;
 
 class ValueStorage<T> {
   ValueStorage(T value) : this._value = Value(value);

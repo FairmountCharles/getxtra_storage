@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:get/utils.dart';
+import 'package:getxtra/utils.dart';
 
 import 'storage/web.dart' if (dart.library.io) 'storage/io.dart';
 import 'value.dart';

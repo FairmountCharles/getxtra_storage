@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:get/get.dart';
+import 'package:getxtra/get.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../value.dart';

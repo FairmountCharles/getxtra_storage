@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_storage_wasm/src/storage_impl.dart';
-import 'package:get_storage_wasm/src/read_write_value.dart';
+import 'package:getextra_storage/src/storage_impl.dart';
+import 'package:getextra_storage/src/read_write_value.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'utils/list_equality.dart';
@@ -15,7 +15,7 @@ void main() async {
 
   const channel = MethodChannel('plugins.flutter.io/path_provider');
   void setUpMockChannels(MethodChannel channel) {
-    TestDefaultBinaryMessengerBinding.instance?.defaultBinaryMessenger.setMockMethodCallHandler(
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       channel,
       (MethodCall? methodCall) async {
         if (methodCall?.method == 'getApplicationDocumentsDirectory') {
