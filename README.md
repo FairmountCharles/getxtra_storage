@@ -1,283 +1,206 @@
 # getxtra_storage
 
-[![pub package](https://img.shields.io/pub/v/getxtra_storage.svg)](https://pub.dev)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+> A modern, community-maintained continuation of GetStorage for the GetXtra ecosystem.
 
-A fast, lightweight, synchronous key-value storage solution for Flutter and Dart applications, built for the **GetXtra ecosystem**.
+## Overview
 
-`getxtra_storage` is the community-maintained continuation of the original `get_storage` package, modernized for current Flutter and Dart releases, enhanced Web/WASM compatibility, and future AI-assisted application development.
+`getxtra_storage` consolidates the work of the original `get_storage` project and subsequent WASM-compatible forks into a single package aligned with the modern `getxtra` ecosystem.
 
-It preserves the familiar GetStorage API while replacing legacy GetX dependencies with **GetXtra** and incorporating modern platform support improvements.
+The goal is simple:
+
+- Preserve the familiar GetStorage API.
+- Support modern Flutter and Dart releases.
+- Incorporate WebAssembly-compatible web improvements.
+- Eliminate dependency chains that require maintaining multiple forks.
+- Provide a stable migration path for existing GetStorage applications.
 
 ---
 
-## Why getxtra_storage?
+## Why getxtra_storage Exists
 
-The original GetStorage became one of the most widely used lightweight storage solutions in the Flutter ecosystem because of its simplicity:
+`getxtra_storage` was not originally planned as a standalone project.
 
-```dart
-box.write('username', 'tabitha');
-print(box.read('username'));
+Like many Flutter developers, we found ourselves maintaining a growing chain of local patches simply to remain compatible with modern Flutter SDKs and web targets.
+
+### The Dependency Chain Problem
+
+Historically, the storage ecosystem looked something like:
+
+```text
+get_storage_wasm
+        │
+        ▼
+   get_storage
+        │
+        ▼
+       get
 ```
 
-No database.
-No schema.
-No migrations.
-Just fast in-memory storage with persistent disk backup.
+As Flutter evolved, incompatibilities began appearing throughout the stack.
 
-`getxtra_storage` continues that philosophy while adding:
+In particular, newer Flutter SDK releases introduced breaking changes that affected GetX itself. Fixing those issues locally solved the immediate problem, but exposed a second issue: `get_storage` depended on the published `get` package, not the patched version.
 
-* ✅ GetXtra compatibility
-* ✅ Modern Dart and Flutter support
-* ✅ WebAssembly (WASM) compatibility
-* ✅ Cross-platform storage implementations
-* ✅ Backward-compatible GetStorage APIs
-* ✅ Community-driven maintenance
-* ✅ AI-first ecosystem alignment
+The chain continued:
+
+1. Patch GetX locally.
+2. Point GetStorage at the patched GetX.
+3. Patch GetStorage locally.
+4. Point GetStorage WASM at the patched GetStorage.
+5. Maintain multiple interconnected forks.
+
+At some point, maintaining several tightly-coupled forks became more complicated than maintaining a single coherent storage package.
+
+### The WASM Opportunity
+
+The excellent `get_storage_wasm` project introduced WebAssembly compatibility improvements and modernized portions of the original web implementation.
+
+Rather than choosing between:
+
+- Original `get_storage`
+- WASM-compatible forks
+- Local compatibility patches
+
+we consolidated the work into a single package.
+
+### The Goal
+
+`getxtra_storage` exists to provide:
+
+- A storage package aligned with the GetXtra ecosystem.
+- Compatibility with modern Flutter and Dart releases.
+- Consolidated WebAssembly improvements.
+- Continued support for mobile, desktop, and web platforms.
+- A familiar API for existing GetStorage users.
+
+### Lineage
+
+```text
+Original Lineage
+
+get
+ └── get_storage
+      └── get_storage_wasm
+
+
+Modern Consolidation
+
+getxtra
+ └── getxtra_storage
+```
+
+---
+
+## Acknowledgements
+
+Special thanks to:
+
+- Jonatas Borges and the GetX/GetStorage contributors.
+- The GetStorage community.
+- lcw99 for WebAssembly compatibility work.
+- Everyone who maintained local patches and compatibility forks along the way.
+
+`getxtra_storage` should be viewed as a continuation of that work rather than a replacement for it.
 
 ---
 
 ## Features
 
-### Fast Memory Access
-
-Values are written immediately to memory and become available synchronously:
-
-```dart
-box.write('theme', 'dark');
-final theme = box.read('theme');
-```
-
-### Persistent Storage
-
-Changes are automatically persisted to the platform storage backend.
-
-### Multiple Containers
-
-Create isolated storage areas:
-
-```dart
-final userBox = GetStorage('user');
-final cacheBox = GetStorage('cache');
-```
-
-### Reactive Listeners
-
-Listen to storage changes:
-
-```dart
-box.listen(() {
-  print('Storage changed');
-});
-```
-
-Or listen to a specific key:
-
-```dart
-box.listenKey('username', (value) {
-  print('Username updated: $value');
-});
-```
-
-### Web & WASM Ready
-
-Supports Flutter Web and modern WebAssembly compilation targets:
-
-```bash
-flutter build web --release --wasm
-```
-
-### AI-Friendly Architecture
-
-Designed to integrate naturally into:
-
-* AI-generated Flutter applications
-* Agentic development workflows
-* Code generation systems
-* Runtime configuration platforms
-* The Tabitha and GetXtra ecosystems
+- Fast in-memory key/value storage.
+- Persistent disk-backed storage.
+- Browser localStorage support.
+- WebAssembly-friendly web implementation.
+- Named storage containers.
+- Change listeners.
+- Key-specific listeners.
+- ReadWriteValue persistent property helpers.
+- Android, iOS, macOS, Windows, Linux, and Web support.
 
 ---
 
-# Installation
-
-Add the package to your `pubspec.yaml`:
+## Installation
 
 ```yaml
 dependencies:
   getxtra_storage:
-```
-
-Then run:
-
-```bash
-flutter pub get
+    git:
+      url: https://github.com/FairmountCharles/getxtra_storage.git
 ```
 
 ---
 
-# Import
+## Basic Usage
 
 ```dart
-import 'package:getxtra_storage/getxtra_storage.dart';
-```
+await GetStorage.init();
 
----
-
-# Initialization
-
-Initialize storage before using it:
-
-```dart
-Future<void> main() async {
-  await GetStorage.init();
-
-  runApp(const MyApp());
-}
-```
-
----
-
-# Basic Usage
-
-Create a storage instance:
-
-```dart
 final box = GetStorage();
+
+await box.write('username', 'john');
+
+print(box.read('username'));
 ```
 
-Write a value:
+### Remove Data
 
 ```dart
-await box.write('quote', 'GetXtra is awesome');
+await box.remove('username');
 ```
 
-Read a value:
-
-```dart
-final quote = box.read<String>('quote');
-```
-
-Remove a value:
-
-```dart
-await box.remove('quote');
-```
-
-Erase an entire container:
+### Erase Container
 
 ```dart
 await box.erase();
 ```
 
-Check if data exists:
+### Listen For Changes
 
 ```dart
-if (box.hasData('quote')) {
-  print('Found quote');
-}
+final dispose = box.listen(() {
+  print('Storage changed');
+});
+
+dispose();
+```
+
+### Listen To A Specific Key
+
+```dart
+box.listenKey('username', (value) {
+  print(value);
+});
 ```
 
 ---
 
-# Multiple Containers
+## ReadWriteValue Helpers
 
 ```dart
-await GetStorage.init('settings');
+final username = ''.val('username');
 
-final settings = GetStorage('settings');
+username.val = 'john.doe';
 
-await settings.write('theme', 'dark');
+print(username.val);
 ```
 
 ---
 
-# ReadWriteValue Helper
+## Platform Support
 
-```dart
-class Preferences {
-  final username = ''.val('username');
-  final age = 0.val('age');
-}
-```
-
-Usage:
-
-```dart
-final prefs = Preferences();
-
-prefs.username.val = 'Tabitha';
-
-print(prefs.username.val);
-```
+| Platform | Status |
+|-----------|----------|
+| Android | Supported |
+| iOS | Supported |
+| macOS | Supported |
+| Windows | Supported |
+| Linux | Supported |
+| Web | Supported |
+| WebAssembly | Supported / In Progress |
 
 ---
 
-# Supported Platforms
-
-| Platform | Supported |
-| -------- | --------- |
-| Android  | ✅         |
-| iOS      | ✅         |
-| macOS    | ✅         |
-| Windows  | ✅         |
-| Linux    | ✅         |
-| Web      | ✅         |
-| WASM     | ✅         |
-
----
-
-# What getxtra_storage Is
-
-A lightweight persistent storage layer that combines:
-
-* Fast in-memory access
-* Persistent platform storage
-* Simple API surface
-* Minimal dependencies
-* Reactive change notifications
-
-Perfect for:
-
-* Application settings
-* User preferences
-* Local caching
-* Session data
-* Lightweight state persistence
-
----
-
-# What getxtra_storage Is Not
-
-`getxtra_storage` is not intended to replace a full database.
-
-If your application requires:
-
-* Complex querying
-* Relationships
-* Indexing
-* Large-scale datasets
-* Offline-first synchronization
-
-Consider solutions such as:
-
-* Drift
-* Isar
-* Hive
-* SQLite
-
----
-
-# Migration from get_storage
-
-Most applications can migrate with minimal changes.
+## Migration From get_storage
 
 ### Before
-
-```yaml
-dependencies:
-  get_storage:
-```
 
 ```dart
 import 'package:get_storage/get_storage.dart';
@@ -285,62 +208,27 @@ import 'package:get_storage/get_storage.dart';
 
 ### After
 
-```yaml
-dependencies:
-  getxtra_storage:
-```
-
 ```dart
 import 'package:getxtra_storage/getxtra_storage.dart';
 ```
 
-The public API remains intentionally familiar.
+If your application already uses standard GetStorage APIs, migration should be straightforward.
 
 ---
 
-# Relationship to GetXtra
+## Roadmap
 
-`getxtra_storage` is the official storage package for the GetXtra ecosystem.
-
-It aims to provide a stable migration path for developers moving from GetX/GetStorage while embracing modern Flutter development practices and future ecosystem improvements.
-
-Learn more:
-
-* GetXtra
-* Tabitha
-* Fairmount & Charles
+- Complete GetXtra dependency migration.
+- Preserve GetStorage API compatibility.
+- Continue modernizing web and WASM support.
+- Improve storage durability and recovery.
+- Expand automated test coverage.
+- Publish stable releases.
 
 ---
 
-# Acknowledgements
+## Community
 
-This package would not exist without the work of the Flutter community members who built and maintained the projects that came before it.
+Issues, pull requests, testing, bug reports, and migration feedback are welcome.
 
-Special thanks to:
-
-### Jonny Borges (jonataslaw)
-
-Creator of the original:
-
-* get_storage
-* GetX
-
-### lcw99
-
-Maintainer of:
-
-* get_storage_wasm
-
-whose WebAssembly work helped modernize the storage implementation for future Flutter Web targets.
-
-### Contributors
-
-Thank you to every contributor, tester, maintainer, issue reporter, and community member who helped evolve these projects over the years.
-
----
-
-# License
-
-MIT License.
-
-Please retain all applicable copyright notices and attribution from upstream projects.
+The long-term success of `getxtra_storage` depends on community participation.
