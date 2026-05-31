@@ -172,6 +172,115 @@ box.listenKey('username', (value) {
 
 ---
 
+# Supported Value Types
+
+`getxtra_storage` stores data as JSON.
+
+That means values should be JSON-compatible.
+
+| Dart Type | Supported | Notes |
+|------------|------------|-------|
+| `String` | Yes | Stored directly |
+| `int` | Yes | Stored as JSON number |
+| `double` | Yes | Stored as JSON number |
+| `num` | Yes | Stored as JSON number |
+| `bool` | Yes | Stored as JSON boolean |
+| `null` | Yes | Used for missing or removed values |
+| `List` | Yes | Must contain JSON-compatible values |
+| `Map<String, dynamic>` | Yes | Keys should be strings and values JSON-compatible |
+| `DateTime` | With conversion | Convert to/from ISO string manually |
+| `Enum` | With conversion | Store enum.name or another stable string |
+| Custom objects | With conversion | Convert with toJson()/fromJson() |
+| Functions, streams, controllers, widgets | No | Not serializable |
+
+---
+
+## Custom Objects
+
+Store custom objects by converting them to JSON-compatible maps or strings.
+
+```dart
+await box.write( 'user', user.toJson() );
+
+final data = box.read<Map<String, dynamic>>( 'user' );
+
+final user = data == null
+    ? null
+    : User.fromJson( data );
+```
+
+If your model's `toJson()` returns a JSON string instead of a map, store the string and decode it when reading.
+
+```dart
+await box.write(
+  'user',
+  jsonEncode( user.toJson() ),
+);
+
+final encoded = box.read<String>( 'user' );
+
+final user = encoded == null
+    ? null
+    : User.fromJson(
+        jsonDecode( encoded ),
+      );
+```
+---
+
+## Enums
+
+Prefer storing enum names instead of indexes.
+
+```dart
+await box.write(
+  'themeMode',
+  ThemeMode.dark.name,
+);
+
+final stored = box.read<String>( 'themeMode' );
+
+final mode = ThemeMode.values.byName(
+  stored ?? ThemeMode.system.name,
+);
+```
+---
+
+## DateTime
+
+Store dates as ISO-8601 strings.
+
+```dart
+await box.write(
+  'lastLogin',
+  DateTime.now().toIso8601String(),
+);
+
+final stored = box.read<String>( 'lastLogin' );
+
+final lastLogin = stored == null
+    ? null
+    : DateTime.parse( stored );
+```
+---
+
+## Important
+
+`getxtra_storage` is not an object database.
+
+It is a fast, memory-first, JSON-backed key/value store.
+
+For complex object graphs, indexing, relationships, querying, or very large record sets, consider a database such as:
+
+- SQLite
+- Drift
+- Isar
+- Hive
+- Realm
+
+Use `getxtra_storage` when you need simple, fast persistence of application settings, user preferences, cached responses, session state, lightweight business objects, or other JSON-compatible data.
+
+---
+
 ## ReadWriteValue Helpers
 
 ```dart
