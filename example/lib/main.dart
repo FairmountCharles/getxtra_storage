@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:get_storage_wasm/get_storage_wasm.dart';
+import 'package:getxtra_storage/getxtra_storage.dart';
 
 void main() async {
   await GetStorage.init();
