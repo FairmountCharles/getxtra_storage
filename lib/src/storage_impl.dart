@@ -1,3 +1,12 @@
+///  Library: getxtra_storage
+///
+///  File:    lib/src/storage_impl.dart
+///
+///  Desc:    This file provides a concrete implementation of the GetStorage class,
+///           which will soon be GetXtraStorage with a compatibility wrapper around it.
+///
+
+/// Package Imports for the module
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -8,24 +17,26 @@ import 'value.dart';
 
 /// Instantiate GetStorage to access storage driver apis
 class GetStorage {
-  factory GetStorage([String container = 'GetStorage', String? path, Map<String, dynamic>? initialData]) {
-    if (_sync.containsKey(container)) {
+  factory GetStorage( [String container = 'GetStorage', String? path, Map<String, dynamic>? initialData ]) {
+    if ( _sync.containsKey( container ) ) {
       return _sync[container]!;
     } else {
-      final instance = GetStorage._internal(container, path, initialData);
+      final instance = GetStorage._internal( container, path, initialData );
       _sync[container] = instance;
       return instance;
     }
   }
 
-  GetStorage._internal(String key, [String? path, Map<String, dynamic>? initialData]) {
-    _concrete = StorageImpl(key, path);
-    _initialData = initialData;
+  GetStorage._internal( String key, [String? path, Map<String, dynamic>? initialData] ) {
+    _concrete =     StorageImpl( key, path );
+    _initialData =  initialData;
 
-    initStorage = Future<bool>(() async {
-      await _init();
-      return true;
-    });
+    initStorage = Future<bool>(
+                    () async {
+                      await _init();
+                      return true;
+                    }
+                  );
   }
 
   static final Map<String, GetStorage> _sync = {};
@@ -33,9 +44,9 @@ class GetStorage {
   final microtask = Microtask();
 
   /// Start the storage drive. It's important to use await before calling this API, or side effects will occur.
-  static Future<bool> init([String container = 'GetStorage']) {
+  static Future<bool> init( [String container = 'GetStorage'] ) {
     WidgetsFlutterBinding.ensureInitialized();
-    return GetStorage(container).initStorage;
+    return GetStorage( container ).initStorage;
   }
 
   Future<void> _init() async {
@@ -47,7 +58,7 @@ class GetStorage {
   }
 
   /// Reads a value in your container with the given key.
-  T? read<T>(String key) {
+  T? read<T>( String key ) {
     return _concrete.read(key);
   }
 
@@ -60,28 +71,28 @@ class GetStorage {
   }
 
   /// return data true if value is different of null;
-  bool hasData(String key) {
-    return (read(key) == null ? false : true);
+  bool hasData( String key ) {
+    return ( read( key ) == null ? false : true );
   }
 
   Map<String, dynamic> get changes => _concrete.subject.changes;
 
   /// Listen changes in your container
-  VoidCallback listen(VoidCallback value) {
-    return _concrete.subject.addListener(value);
+  VoidCallback listen( VoidCallback value ) {
+    return _concrete.subject.addListener( value );
   }
 
   Map<Function, Function> _keyListeners = <Function, Function>{};
 
-  VoidCallback listenKey(String key, ValueSetter callback) {
+  VoidCallback listenKey( String key, ValueSetter callback ) {
     final VoidCallback listen = () {
-      if (changes.keys.first == key) {
-        callback(changes[key]);
+      if ( changes.keys.first == key ) {
+        callback( changes[key] );
       }
     };
 
     _keyListeners[callback] = listen;
-    return _concrete.subject.addListener(listen);
+    return _concrete.subject.addListener( listen );
   }
 
   // /// Remove listen of your container
@@ -95,27 +106,27 @@ class GetStorage {
   // }
 
   /// Write data on your container
-  Future<void> write(String key, dynamic value) async {
-    writeInMemory(key, value);
+  Future<void> write( String key, dynamic value ) async {
+    writeInMemory( key, value );
     // final _encoded = json.encode(value);
     // await _concrete.write(key, json.decode(_encoded));
 
     return _tryFlush();
   }
 
-  void writeInMemory(String key, dynamic value) {
-    _concrete.write(key, value);
+  void writeInMemory( String key, dynamic value ) {
+    _concrete.write( key, value );
   }
 
   /// Write data on your only if data is null
-  Future<void> writeIfNull(String key, dynamic value) async {
-    if (read(key) != null) return;
-    return write(key, value);
+  Future<void> writeIfNull( String key, dynamic value ) async {
+    if ( read( key ) != null) return;
+    return write( key, value );
   }
 
   /// remove data from container by key
-  Future<void> remove(String key) async {
-    _concrete.remove(key);
+  Future<void> remove( String key ) async {
+    _concrete.remove( key );
     return _tryFlush();
   }
 
@@ -134,13 +145,13 @@ class GetStorage {
   }
 
   Future _addToQueue() {
-    return queue.add(_flush);
+    return queue.add( _flush );
   }
 
   Future<void> _flush() async {
     try {
       await _concrete.flush();
-    } catch (e) {
+    } catch ( e ) {
       rethrow;
     }
     return;
@@ -160,19 +171,23 @@ class GetStorage {
 }
 
 class Microtask {
-  int _version = 0;
-  int _microtask = 0;
+  int _version =    0;
+  int _microtask =  0;
 
-  void exec(Function callback) {
-    if (_microtask == _version) {
+  void exec( Function callback ) {
+    if ( _microtask == _version ) {
+
       _microtask++;
-      scheduleMicrotask(() {
-        _version++;
-        _microtask = _version;
-        callback();
-      });
+
+      scheduleMicrotask(
+        () {
+          _version++;
+          _microtask = _version;
+          callback();
+        }
+      );
     }
   }
 }
 
-typedef KeyCallback = Function(String);
+typedef KeyCallback = Function( String );
