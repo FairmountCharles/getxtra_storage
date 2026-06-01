@@ -50,8 +50,7 @@ void mockApplicationDocumentsDirectory( Directory dir ) {
 
 /// Clears the path_provider mock after a test suite finishes.
 void clearPathProviderMock() {
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
     pathProviderChannel,
     null,
   );
