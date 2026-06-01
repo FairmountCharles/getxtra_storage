@@ -303,8 +303,22 @@ print(username.val);
 | Windows | Supported |
 | Linux | Supported |
 | Web | Supported |
-| WebAssembly | Supported / In Progress |
+| WebAssembly | Supported |
 
+### Web and WASM Support
+
+`getxtra_storage` uses a modern `dart:js_interop` web backend instead of
+the deprecated `dart:html` APIs.
+
+The legacy `storage/html.dart` file is retained only as a compatibility shim
+and forwards to the modern web implementation.
+
+If your code imported `src/storage/html.dart` directly, stop doing that.
+Use the public package import instead:
+
+```dart
+import 'package:getxtra_storage/getxtra_storage.dart';
+```
 ---
 
 ## Migration From get_storage
@@ -322,6 +336,68 @@ import 'package:getxtra_storage/getxtra_storage.dart';
 ```
 
 If your application already uses standard GetStorage APIs, migration should be straightforward.
+
+---
+
+## Testing
+
+`getxtra_storage` includes a regression test suite designed to preserve compatibility with the original GetStorage API while validating the modern GetXtra and WASM-compatible implementation.
+
+The suite covers:
+
+- initialization
+- reads and writes
+- removals and erase
+- `writeIfNull`
+- named containers
+- key and container listeners
+- `ReadWriteValue`
+- supported JSON-compatible values
+- IO persistence
+- backup recovery
+
+### Running Tests
+
+```bash
+flutter test
+```
+
+### Running Analyze
+
+```bash
+dart analyze
+```
+
+### Path Provider Mocking
+
+On IO platforms, `getxtra_storage` uses `path_provider` to resolve the application documents directory.
+
+Flutter unit tests do not automatically call native platform code, so tests should mock the path provider method channel:
+
+```dart
+final testDirectory = await createStorageTestDirectory( 'documents' );
+
+mockApplicationDocumentsDirectory( testDirectory );
+```
+
+See:
+
+```text
+test/helpers/storage_test_helper.dart
+```
+
+### Web and WASM Checks
+
+The package uses a `dart:js_interop` web backend and keeps `storage/html.dart` only as a compatibility shim.
+
+To validate web compatibility:
+
+```bash
+flutter build web --release
+flutter build web --release --wasm
+```
+
+These commands help ensure no active `dart:html` dependency remains in the web build path.
 
 ---
 
