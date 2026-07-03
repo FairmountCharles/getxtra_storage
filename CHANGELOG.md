@@ -1,3 +1,6 @@
+## [2.1.4] 
+- Updated for GetXtra compatibility
+
 ## [2.1.3] 
 - Updated `get` package to 4.7.2 for full WASM compatibility
 - Fixed dart:html compatibility issues with WebAssembly builds

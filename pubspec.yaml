@@ -1,6 +1,6 @@
 name: getxtra_storage
 description: A fast, extra light and synchronous key-value storage written entirely in Dart with WebAssembly support. Based on the original get_storage package.
-version: 0.0.3
+version: 2.1.4
 homepage: https://https://github.com/FairmountCharles/getxtra_storage
 repository: https://https://github.com/FairmountCharles/getxtra_storage
 issue_tracker: https://https://github.com/FairmountCharles/getxtra_storage/issues
@@ -11,10 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  getxtra:
-    git:
-      url: git@github.com:gauravmehta13/getxtra.git
-      ref: master
+  getxtra: ^5.0.4
   path_provider: ^2.1.5
   #platform_info: ^3.0.0-nullsafety.1
 
