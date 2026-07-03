@@ -39,7 +39,7 @@ import 'dart:typed_data';
 import 'package:getxtra/get.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../value.dart';
+import 'package:getxtra_storage/src/value.dart';
 
 /// Platform-specific storage implementation for file-system-backed targets.
 ///
@@ -83,7 +83,7 @@ class StorageImpl {
   ///
   /// A change notification is emitted so listeners are informed that the
   /// container contents have been erased.
-  void clear() async {
+  Future<void> clear() async {
     subject
       ..value.clear()
       ..changeValue( "", null );
@@ -111,13 +111,13 @@ class StorageImpl {
     final buffer = utf8.encode( json.encode( subject.value ) );
     final length = buffer.length;
 
-    RandomAccessFile _file = await _getRandomFile();
+    RandomAccessFile file = await _getRandomFile();
 
-    _randomAccessfile = await _file.lock();
+    _randomAccessfile = await file.lock();
     _randomAccessfile = await _randomAccessfile!.setPosition( 0 );
     _randomAccessfile = await _randomAccessfile!.writeFrom( buffer );
     _randomAccessfile = await _randomAccessfile!.truncate( length );
-    _randomAccessfile = await _file.unlock();
+    _randomAccessfile = await file.unlock();
 
     _madeBackup();
   }
@@ -169,9 +169,9 @@ class StorageImpl {
 
     subject.value = initialData ?? <String, dynamic>{};
 
-    RandomAccessFile _file = await _getRandomFile();
+    RandomAccessFile file = await _getRandomFile();
 
-    return _file.lengthSync() == 0 ? flush() : _readFile();
+    return file.lengthSync() == 0 ? flush() : _readFile();
   }
 
   /// Removes a key from the in-memory container.
@@ -198,13 +198,13 @@ class StorageImpl {
   Future<void> _readFile() async {
     try {
 
-      RandomAccessFile _file = await _getRandomFile();
+      RandomAccessFile file = await _getRandomFile();
 
-      _file = await _file.setPosition( 0 );
+      file = await file.setPosition( 0 );
 
-      final buffer =  new Uint8List( await _file.length() );
+      final buffer =  Uint8List( await file.length() );
 
-      await _file.readInto( buffer );
+      await file.readInto( buffer );
 
       subject.value = json.decode( utf8.decode( buffer ) );
 
@@ -212,9 +212,9 @@ class StorageImpl {
 
       Get.log( 'Corrupted box, recovering backup file', isError: true );
 
-      final _file = await _getFile( true );
+      final file = await _getFile( true );
 
-      final content = await _file.readAsString()
+      final content = await file.readAsString()
                               ..trim();
 
       if ( content.isEmpty ) {
@@ -236,7 +236,7 @@ class StorageImpl {
         }
       }
 
-      flush();
+      await flush();
     }
   }
 
@@ -273,10 +273,10 @@ class StorageImpl {
   Future<File> _fileDb({ required bool isBackup }) async {
 
     final dir =   await _getImplicitDir();
-    final _path = await _getPath( isBackup, path ?? dir.path );
-    final _file = File( _path );
+    final newpath = await _getPath( isBackup, path ?? dir.path );
+    final file = File( newpath );
 
-    return _file;
+    return file;
   }
 
   /// Returns the application's default documents directory.
@@ -287,7 +287,7 @@ class StorageImpl {
     try {
       return getApplicationDocumentsDirectory();
     } catch ( err ) {
-      throw err;
+      rethrow;
     }
   }
 
@@ -304,11 +304,11 @@ class StorageImpl {
   /// The platform-specific path separator is selected automatically.
   Future<String> _getPath( bool isBackup, String? path ) async {
 
-    final _isWindows = GetPlatform.isWindows;
-    final _separator = _isWindows ? '\\' : '/';
+    final isWindows = GetPlatform.isWindows;
+    final separator = isWindows ? '\\' : '/';
 
     return  isBackup
-              ? '$path$_separator$fileName.bak'
-              : '$path$_separator$fileName.gs';
+              ? '$path$separator$fileName.bak'
+              : '$path$separator$fileName.gs';
   }
 }

@@ -3,33 +3,30 @@
 ///
 /// File:    lib/src/value.dart
 ///
-/// Desc:
-///   Defines the ValueStorage<T> class, a lightweight reactive wrapper used
-///   internally by getxtra_storage to track storage state and broadcast change
-///   notifications.
+/// Desc: Defines the `ValueStorage<T>` class, a lightweight reactive wrapper used
+///       internally by getxtra_storage to track storage state and broadcast change
+///       notifications.
 ///
-///   ValueStorage acts as the observable backing store for container data,
-///   allowing GetStorage instances to notify listeners whenever values are
-///   added, updated, removed, or cleared.
+///       ValueStorage acts as the observable backing store for container data,
+///       allowing GetStorage instances to notify listeners whenever values are
+///       added, updated, removed, or cleared.
 ///
-///   Unlike the original get_storage implementation, which directly inherited
-///   from GetX's Value<T>, this implementation composes a getxtra Value<T>
-///   instance internally. This preserves compatibility with the public
-///   GetStorage API while reducing coupling to framework internals.
+///       Unlike the original get_storage implementation, which directly inherited
+///       from GetX's Value<T>, this implementation composes a getxtra Value<T>
+///       instance internally. This preserves compatibility with the public
+///       GetStorage API while reducing coupling to framework internals.
 ///
-///   The class also maintains a lightweight "changes" map containing the most
-///   recent key/value mutation. This enables listenKey() and related APIs to
-///   efficiently determine which storage entry changed without requiring a
-///   full comparison of the storage container.
+///       The class also maintains a lightweight "changes" map containing the most
+///       recent key/value mutation. This enables listenKey() and related APIs to
+///       efficiently determine which storage entry changed without requiring a
+///       full comparison of the storage container.
 ///
-///   This class is considered an internal infrastructure component and is not
-///   typically interacted with directly by package consumers.
+///       This class is considered an internal infrastructure component and is not
+///       typically interacted with directly by package consumers.
 ///
-/// Original Concept:
-///   get_storage (Jonatas Borges / GetX)
+/// Original Concept: get_storage (Jonatas Borges / GetX)
 ///
-/// Modernized For:
-///   getxtra_storage
+/// Modernized For: getxtra_storage
 /// ---------------------------------------------------------------------------
 
 /// Flutter imports.
@@ -43,7 +40,7 @@ class ValueStorage<T> {
   /// Creates a new reactive storage wrapper initialized with [value].
   ///
   /// The supplied value becomes the initial observable state.
-  ValueStorage( T value ) : this._value = Value( value );
+  ValueStorage( T value ) : _value = Value( value );
 
   /// Underlying reactive value implementation provided by getxtra.
   final Value _value;
@@ -87,7 +84,7 @@ class ValueStorage<T> {
 
   /// Replaces the current stored value.
   ///
-  /// Listener notifications are handled by the underlying Value<T>
+  /// Listener notifications are handled by the underlying `Value<T>`
   /// implementation when appropriate.
   set value( T value ) {
     _value.value = value;

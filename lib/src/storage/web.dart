@@ -26,7 +26,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
 
-import '../value.dart';
+import 'package:getxtra_storage/src/value.dart';
 
 /// Web Storage API binding for localStorage.getItem().
 ///

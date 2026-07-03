@@ -38,10 +38,10 @@ void main() async {
 
   test('write, read listen, e removeListen', () async {
     String valueListen = "";
-    g.write('test', 'a');
-    g.write('test2', 'a');
+    await g.write( 'test', 'a' );
+    await g.write( 'test2', 'a' );
 
-    final removeListen = g.listenKey('test', (val) {
+    final removeListen = g.listenKey( 'test', (val) {
       valueListen = val;
     });
 
@@ -63,7 +63,7 @@ void main() async {
   });
 
   test('Write and read', () {
-    var list = new List<int>.generate(50, (i) {
+    var list = List<int>.generate(50, (i) {
       int count = i + 1;
       g.write('write', count);
       return count;
@@ -85,7 +85,7 @@ void main() async {
 
   test('Write and read using delegate', () {
     final data = 0.val('write');
-    var list = new List<int>.generate(50, (i) {
+    var list = List<int>.generate(50, (i) {
       int count = i + 1;
       data.val = count;
       return count;
@@ -97,7 +97,7 @@ void main() async {
   test('Write, read, remove and exists', () {
     expect(null, g.read('write'));
 
-    var list = new List<int>.generate(50, (i) {
+    var list = List<int>.generate(50, (i) {
       int count = i + 1;
       g.write('write', count);
       return count;
@@ -116,13 +116,13 @@ void main() async {
     var container2 = await GetStorage.init();
     expect(container1 == container2, true);
 
-    newContainer.write('test', '1234');
-    g.write('test', 'a');
+    await newContainer.write('test', '1234');
+    await g.write('test', 'a');
     expect(g.read('test') == newContainer.read('test'), false);
   });
 
   group('get keys/values', () {
-    Function(Iterable, List) eq = (i, l) => const ListEquality().equals(i.toList(), l);
+    eq( Iterable<dynamic> i, List<dynamic> l ) => const ListEquality().equals(i.toList(), l);
 
     test('should return their stored dynamic values', () {
       expect(eq(g.getKeys().toList(), []), true);
@@ -145,7 +145,7 @@ void main() async {
 
 Future<File> _fileDb({bool isBackup = false, String fileName = 'GetStorage'}) async {
   final dir = await getApplicationDocumentsDirectory();
-  final _path = dir.path;
-  final _file = isBackup ? File('$_path/$fileName.bak') : File('$_path/$fileName.gs');
-  return _file;
+  final path = dir.path;
+  final file = isBackup ? File('$path/$fileName.bak') : File('$path/$fileName.gs');
+  return file;
 }

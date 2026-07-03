@@ -1,3 +1,6 @@
+## [2.1.5] 
+- Fix an array of linter errors that pub suggested
+
 ## [2.1.4] 
 - Updated for GetXtra compatibility
 

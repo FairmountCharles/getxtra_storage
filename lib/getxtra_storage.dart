@@ -1,4 +1,4 @@
-library getextra_storage;
+library;
 
 export 'src/read_write_value.dart';
 export 'src/storage_impl.dart';

@@ -1,0 +1,20 @@
+include: package:flutter_lints/flutter.yaml
+analyzer:
+  errors:
+    dangling_library_doc_comments: ignore
+    public_member_api_docs: info
+    always_use_package_imports: info
+    avoid_null_checks_in_equality_operators: info
+    prefer_final_parameters: ignore
+
+linter:
+  rules:
+    unawaited_futures: true
+    # public_member_api_docs: true
+    always_use_package_imports: true
+    avoid_void_async: true
+    eol_at_end_of_file: true
+    unnecessary_lambdas: true
+    unnecessary_late: true
+    use_null_aware_elements: true
+    var_with_no_type_annotation: true

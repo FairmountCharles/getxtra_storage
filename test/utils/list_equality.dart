@@ -1,4 +1,4 @@
-const int _HASH_MASK = 0x7fffffff;
+const int hashMask = 0x7fffffff;
 
 class ListEquality<E> implements Equality<List<E>> {
   final Equality<E> _elementEquality;
@@ -22,13 +22,13 @@ class ListEquality<E> implements Equality<List<E>> {
     var hash = 0;
     for (var i = 0; i < list.length; i++) {
       var c = _elementEquality.hash(list[i]);
-      hash = (hash + c) & _HASH_MASK;
-      hash = (hash + (hash << 10)) & _HASH_MASK;
+      hash = (hash + c) & hashMask;
+      hash = (hash + (hash << 10)) & hashMask;
       hash ^= (hash >> 6);
     }
-    hash = (hash + (hash << 3)) & _HASH_MASK;
+    hash = (hash + (hash << 3)) & hashMask;
     hash ^= (hash >> 11);
-    hash = (hash + (hash << 15)) & _HASH_MASK;
+    hash = (hash + (hash << 15)) & hashMask;
     return hash;
   }
 

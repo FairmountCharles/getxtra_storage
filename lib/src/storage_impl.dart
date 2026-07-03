@@ -23,8 +23,8 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:getxtra/utils.dart';
 
-import 'storage/web.dart' if ( dart.library.io ) 'storage/io.dart';
-import 'value.dart';
+import 'package:getxtra_storage/src/storage/web.dart' if ( dart.library.io ) 'storage/io.dart';
+import 'package:getxtra_storage/src/value.dart';
 
 /// Instantiate GetStorage to access storage driver apis
 class GetStorage {
@@ -90,7 +90,7 @@ class GetStorage {
     try {
       await _concrete.init(_initialData);
     } catch (err) {
-      throw err;
+      rethrow;
     }
   }
 
@@ -137,18 +137,18 @@ class GetStorage {
   ///
   /// This map exists to preserve the original design where listeners could be
   /// associated with callbacks and later removed.
-  Map<Function, Function> _keyListeners = <Function, Function>{};
+  final Map<Function, Function> _keyListeners = <Function, Function>{};
 
   /// Registers a listener for changes to a single storage key.
   ///
   /// When the most recent change matches [key], [callback] receives the new
   /// value for that key. The returned callback removes the listener.
   VoidCallback listenKey( String key, ValueSetter callback ) {
-    final VoidCallback listen = () {
+    void listen() {
       if ( changes.keys.first == key ) {
         callback( changes[key] );
       }
-    };
+    }
 
     _keyListeners[callback] = listen;
     return _concrete.subject.addListener( listen );

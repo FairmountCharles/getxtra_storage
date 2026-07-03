@@ -2,7 +2,7 @@
 ///
 ///  File:    lib/src/read_write_value.dart
 ///
-///  Desc:    This file provides the ReadWriteValue<T> abstraction and related
+///  Desc:    This file provides the `ReadWriteValue<T>` abstraction and related
 ///           extension helpers used to expose storage-backed values as simple
 ///           Dart properties.
 ///
@@ -33,7 +33,7 @@
 ///
 
 /// Package Imports for the module
-import 'storage_impl.dart';
+import 'package:getxtra_storage/src/storage_impl.dart';
 
 /// Signature used to lazily provide a storage container.
 ///
