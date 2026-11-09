@@ -221,8 +221,21 @@ class GetStorage {
   ///
   /// GetQueue serializes asynchronous work so persistence writes are performed
   /// in order.
-  Future _addToQueue() {
-    return queue.add( _flush );
+  Future<void> _addToQueue() async {
+    Object? failure;
+    StackTrace? failureStack;
+    // GetQueue catches Exception but not Error. Settle its job normally so it
+    // can drain, then deliver the original flush failure to the write caller.
+    await queue.add<void>(() async {
+      try {
+        await _flush();
+      } catch (error, stackTrace) {
+        failure = error;
+        failureStack = stackTrace;
+      }
+    });
+    final error = failure;
+    if (error != null) Error.throwWithStackTrace(error, failureStack!);
   }
 
   /// Flushes the current in-memory state to the active platform storage backend.
