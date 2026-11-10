@@ -1,3 +1,8 @@
+## [2.1.6]
+- Await serialized persistence before completing coalesced and later writes.
+- Propagate persistence and serialization failures while allowing subsequent writes to complete.
+- Flush primary storage, await matching backups, and close IO handles after each operation.
+
 ## [2.1.5] 
 - Fix an array of linter errors that pub suggested
 
