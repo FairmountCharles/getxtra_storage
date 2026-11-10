@@ -74,8 +74,6 @@ class StorageImpl {
   final ValueStorage<Map<String, dynamic>> subject =
       ValueStorage<Map<String, dynamic>>( <String, dynamic>{} );
 
-  /// Cached file handle used for efficient repeated storage operations.
-  RandomAccessFile? _randomAccessfile;
 
   /// Clears all values from the in-memory container.
   ///
@@ -107,32 +105,26 @@ class StorageImpl {
   ///
   /// After the primary write completes, a backup copy is generated.
   Future<void> flush() async {
-
-    final buffer = utf8.encode( json.encode( subject.value ) );
-    final length = buffer.length;
-
-    RandomAccessFile file = await _getRandomFile();
-
-    _randomAccessfile = await file.lock();
-    _randomAccessfile = await _randomAccessfile!.setPosition( 0 );
-    _randomAccessfile = await _randomAccessfile!.writeFrom( buffer );
-    _randomAccessfile = await _randomAccessfile!.truncate( length );
-    _randomAccessfile = await file.unlock();
-
-    _madeBackup();
-  }
-
-  /// Creates or updates the backup copy of the container.
-  ///
-  /// The backup file provides recovery support when the primary file becomes
-  /// corrupted or unreadable.
-  void _madeBackup() {
-    _getFile( true ).then(
-      ( value ) => value.writeAsString(
-                      json.encode( subject.value ),
-                      flush: true,
-                    ),
-    );
+    final buffer = utf8.encode(json.encode(subject.value));
+    final file = await _getRandomFile();
+    var locked = false;
+    try {
+      await file.lock();
+      locked = true;
+      await file.setPosition(0);
+      await file.writeFrom(buffer);
+      await file.truncate(buffer.length);
+      await file.flush();
+    } finally {
+      try {
+        if (locked) await file.unlock();
+      } finally {
+        await file.close();
+      }
+    }
+    // Backup the same snapshot, and deliver persistence failures to callers.
+    final backup = await _getFile(true);
+    await backup.writeAsBytes(buffer, flush: true);
   }
 
   /// Reads a value from the in-memory container.
@@ -169,9 +161,14 @@ class StorageImpl {
 
     subject.value = initialData ?? <String, dynamic>{};
 
-    RandomAccessFile file = await _getRandomFile();
-
-    return file.lengthSync() == 0 ? flush() : _readFile();
+    final file = await _getRandomFile();
+    late bool empty;
+    try {
+      empty = await file.length() == 0;
+    } finally {
+      await file.close();
+    }
+    return empty ? flush() : _readFile();
   }
 
   /// Removes a key from the in-memory container.
@@ -198,15 +195,15 @@ class StorageImpl {
   Future<void> _readFile() async {
     try {
 
-      RandomAccessFile file = await _getRandomFile();
-
-      file = await file.setPosition( 0 );
-
-      final buffer =  Uint8List( await file.length() );
-
-      await file.readInto( buffer );
-
-      subject.value = json.decode( utf8.decode( buffer ) );
+      final file = await _getRandomFile();
+      try {
+        await file.setPosition(0);
+        final buffer = Uint8List(await file.length());
+        await file.readInto(buffer);
+        subject.value = json.decode(utf8.decode(buffer));
+      } finally {
+        await file.close();
+      }
 
     } catch ( e ) {
 
@@ -240,19 +237,10 @@ class StorageImpl {
     }
   }
 
-  /// Returns the active random-access file handle.
-  ///
-  /// The file handle is cached so repeated flush operations avoid repeatedly
-  /// opening and closing the same file.
+  /// Opens a handle scoped to one read or flush; callers close it in finally.
   Future<RandomAccessFile> _getRandomFile() async {
-
-    if (_randomAccessfile != null) return _randomAccessfile!;
-
     final fileDb = await _getFile(false);
-
-    _randomAccessfile = await fileDb.open(mode: FileMode.append);
-
-    return _randomAccessfile!;
+    return fileDb.open(mode: FileMode.append);
   }
 
   /// Returns a File object for either the primary or backup file.
@@ -285,7 +273,7 @@ class StorageImpl {
   /// platform-appropriate persistent storage location.
   Future<Directory> _getImplicitDir() async {
     try {
-      return getApplicationDocumentsDirectory();
+      return await getApplicationDocumentsDirectory();
     } catch ( err ) {
       rethrow;
     }

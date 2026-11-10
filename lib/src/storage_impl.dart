@@ -221,8 +221,21 @@ class GetStorage {
   ///
   /// GetQueue serializes asynchronous work so persistence writes are performed
   /// in order.
-  Future _addToQueue() {
-    return queue.add( _flush );
+  Future<void> _addToQueue() async {
+    Object? failure;
+    StackTrace? failureStack;
+    // GetQueue catches Exception but not Error. Settle its job normally so it
+    // can drain, then deliver the original flush failure to the write caller.
+    await queue.add<void>(() async {
+      try {
+        await _flush();
+      } catch (error, stackTrace) {
+        failure = error;
+        failureStack = stackTrace;
+      }
+    });
+    final error = failure;
+    if (error != null) Error.throwWithStackTrace(error, failureStack!);
   }
 
   /// Flushes the current in-memory state to the active platform storage backend.
@@ -253,30 +266,25 @@ class GetStorage {
 
 /// Simple microtask gate used to avoid scheduling redundant flush callbacks.
 class Microtask {
-  /// Tracks the most recently completed microtask version.
-  int _version =    0;
+  Completer<void>? _pending;
 
-  /// Tracks whether a microtask has already been scheduled for the current
-  /// version.
-  int _microtask =  0;
-
-  /// Schedules [callback] to run in a microtask if one is not already pending.
-  ///
-  /// This keeps rapid consecutive writes from immediately stacking duplicate
-  /// flush scheduling work in the same event-loop turn.
-  void exec( Function callback ) {
-    if ( _microtask == _version ) {
-
-      _microtask++;
-
-      scheduleMicrotask(
-        () {
-          _version++;
-          _microtask = _version;
-          callback();
-        }
-      );
-    }
+  /// Coalesced callers wait for the same queued persistence result.
+  Future<void> exec(Function callback) {
+    final pending = _pending;
+    if (pending != null) return pending.future;
+    final result = Completer<void>();
+    _pending = result;
+    scheduleMicrotask(() async {
+      // Later mutations schedule their own flush, serialized by GetQueue.
+      _pending = null;
+      try {
+        await Future<void>.sync(() async { await callback(); });
+        result.complete();
+      } catch (error, stackTrace) {
+        result.completeError(error, stackTrace);
+      }
+    });
+    return result.future;
   }
 }
 
